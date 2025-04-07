@@ -1,0 +1,46 @@
+4/7/25
+let TRUE = \x y -> x
+let FALSE = \x y -> y
+ITE stands for "if ... then ... else"
+let ITE = \b x y -> b x y
+let NOT = \b x y -> b y x
+
+eval if_true:
+	ITE TRUE rainbow sprinkles
+	=d> (\b x y -> b x y) TRUE rainbow sprinkles
+	=b> (\x y -> TRUE x y) rainbow sprinkles
+	=b> (\y -> TRUE rainbow y) sprinkles
+	=b> TRUE rainbow sprinkles
+	=d> (\x y -> x) rainbow sprinkles
+	=b> (y -> rainbow) sprinkles
+	=b> rainbow
+
+TRUE takes two arguments and returns the first one, FALSE takes two arguments and returns the second one
+NOT takes two arguments and flips the two arguments around in how it passed them when compared to ITE
+
+eval not_true :
+  NOT TRUE
+  =d> (\b x y -> b y x) TRUE
+  =b> \x y -> TRUE y x
+  =d> \x y -> (\x y -> x) y x
+  =b> \x y -> (\y -> y) x
+  =b> \x y -> y
+  =d> FALSE
+
+Church numerals
+To encode the number N, we use a function that takes arguments f and x, and apples f to x N times
+
+let ONE = \f x -> f x
+let TWO = \f x -> f (f x)
+let THREE = \f x -> f (f (f x))
+
+to make one into zero you want to take \f x -> x and make it \f x -> f x
+let INCR = \n -> (\f x -> f (n f x))
+
+eval incr_example :
+  INCR ZERO
+  =d> (\n -> (\f x -> f (n f x))) ZERO
+  =b> \f x -> f (ZERO f x))
+  =d> \f x -> f ((f -> x) f x))
+  =b> \f x -> f ((\x -> x) x)
+  =b> \f x -> f x
