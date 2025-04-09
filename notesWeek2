@@ -44,3 +44,68 @@ eval incr_example :
   =d> \f x -> f ((f -> x) f x))
   =b> \f x -> f ((\x -> x) x)
   =b> \f x -> f x
+
+4/9/25
+Can increment n 'm' times or m 'n' times
+let ADD = \n m -> n INCR m
+
+eval add_two_one:
+  =d> (\n m -> n INCR m) TWO ONE
+  =b> (\m -> TWO INCR m) ONE
+  =b> TWO INCR ONE
+  =d> (\f x -> f (f x)) INCR ONE
+  =b> (\x -> INCR (INCR x)) ONE
+  =b> INCR (INCR ONE)
+  =d> (\n -> (\f x -> f (n f x))) INCR ONE
+  =b> (\f x -> f ((INCR) f x)) ONE
+  =d> \f x -> f (((\n -> (\f x -> f (n f x))) ONE) f x)
+  =b> \f x -> f ((\f x -> f (ONE f x)) f x)
+  =b> \f x -> f ((\x -> f (ONE f x)) x)
+  =b> \f x -> f (f (ONE f x))
+  =d> \f x -> f (f ((\f x -> f x) f x)
+  =b> \f x -> f (f ((\x -> f x) x)
+  =b> \f x -> f (f (f x))
+  =d> THREE
+
+A binding is an association of a name to some entity
+The scope of a binding in a program is the part of the program where the name can be used to refer to the entity
+\x -> e
+e is the scope of the binding form the formal parameter X to whatever argument is passed to this function when it is called
+in \x -> e, we say that any occurence of x in e is bound by the binder \x
+\x -> x
+\x -> (\y -> x)
+Both functions above contain a bound occurence of x
+An occurence of a variable is free if it is not bounded
+x and y both appear free in the expression: x y
+In the expression \y -> x y, x is free and y is bound
+(\x y -> y) x <- x occurs free here, and y is bound
+(\x y -> x y) x <- x occurs both free and bound, y occurs bound
+What variables occur free in a lambda calc expression?
+e = x | \x -> e| e1 e2
+FV(e) = the set of variables that occur free in e
+FV(x) = {x}
+FV(\x -> e) = FV(e) - {x}
+FV(e1 e2) = FV(e1) U FV(e2)
+
+An expression with no free variables is closed
+A closed expression is also known as a combinator
+e.g. \x -> x
+
+Revisiting the beta rule
+Before we said
+(\x -> e1) e2 -> B e1[x:=e2], e1 but with all occurences of x replaced with e2
+Instead it is now e1 but with all free occurences of x replaced with e2
+(\x -> (\x -> x)) y
+Can not put y in anywhere, because x is bounded everywhere
+
+But what about this?
+(\x -> (\y -> x)) y
+With current definition of beta rule this becomes the identity function: \y -> y
+	The above is wrong, because y occurred free in the argument
+	It got "captured" by the \y binder in the body of the function
+So what we really want
+	e1[x:= e2]
+to mean is "e1, but with all free occurences of x replaced by e2 as long as no variables that occur free in e2 get 
+  captured by binders in e1" and if any variables would get captured, the substitution operation is undefined
+This means that if we want to do a substitution, but it would cause variable capture, we need to rename formal parameters first
+=a> is an alpha step which allows you to rename formal parameters
